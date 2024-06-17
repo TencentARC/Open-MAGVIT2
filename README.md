@@ -20,7 +20,7 @@ In our codebase, we have re-implemented the MAGVIT2 tokenizer in PyTorch, closel
 
 ## 📖 Implementations
 
-**Figure 1.** The framework of the Open-MAGVIT2 tokenizer, composed of an encoder, a lookup-free quantizer, and a decoder.
+**Figure 1.** The framework of the Open-MAGVIT2 tokenizer, composed of an encoder, a lookup-free quantizer (LFQ), and a decoder.
 
 <p align="center">
 <img src="./assets/framework.png">
@@ -74,7 +74,7 @@ We follow the design of Generator in MAGVIT-2 but use PatchGAN instead of StyleG
 
 
 **Table 2.** Compare with the original MAGVIT2 by training and testing with both $128 \times 128$ resolution as used in its original paper. ImageNet 50k validation set is used for testing.
-|Method| Token Type | #Tokens | Data | LFQ | Large Codebook | Up/DownSampler | rFID| URL | 
+|Method| Token Type | #Tokens | Data | LFQ | Large Codebook | Up/Down Sampler | rFID| URL | 
 |:----:|:----:|:----:|:----:|:----------:|:-------:|:------:|:----------:|:------:|
 |MAGVIT2 | 2D | $16 \times 16$ | 128 $\times$ 128 ImageNet | √ |  √    |   √ |1.21 | - |
 |Open-MAGVIT2 | 2D | $16 \times 16$ |128 $\times$ 128 ImageNet | √ |  √ |  √ | 1.56 | [IN128_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_B.ckpt) |
