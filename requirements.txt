@@ -1,0 +1,12 @@
+torch==2.0.0
+torchvision==0.15.1
+lightning==2.2.5
+jsonargparse[signatures]>=4.27.7
+tensorboard
+tensorboardx
+albumentations==1.4.4
+omegaconf
+einops
+requests
+transformers==4.37.2
+lpips

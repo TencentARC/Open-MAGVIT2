@@ -1,0 +1,105 @@
+# refer to https://app.koofr.net/links/90cbd5aa-ef70-4f5e-99bc-f12e5a89380e?path=%2F2021-04-03T19-39-50_cin_transformer%2Fconfigs%2F2021-04-03T19-39-50-project.yaml
+seed_everything: true
+trainer:
+  accelerator: gpu
+  strategy: ddp_find_unused_parameters_true
+  devices: 8
+  num_nodes: 4
+  precision: 16-mixed
+  max_epochs: 100
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: -1
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "../../checkpoints/vqgan/test" #Please Specify your own path
+        save_top_k: 10
+        monitor: "val/loss"
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: "../../results/vqgan"
+      version: "test"
+      name:
+
+model:
+  class_path: taming.models.cond_transformer.Net2NetTransformer
+  init_args:
+    learning_rate: 1e-4
+    first_stage_key: image
+    cond_stage_key: class_label
+    token_factorization: False
+    transformer_config:
+      target: taming.modules.transformer.mingpt.GPT
+      params:
+        vocab_size: 262144 # 262144 tokens
+        # vocab_size: 512
+        block_size: 512
+        n_layer: 24
+        n_head: 16
+        n_embd: 1024
+        token_drop: 0.1
+        token_factorization: False
+        weight_tying: True
+        class_num: 1000 #class tokens
+    first_stage_config:
+      target: taming.models.lfqgan.VQModel
+      params:
+        ckpt_path: #please specify the checkpoint path
+        n_embed: 262144
+        embed_dim: 18
+        learning_rate: 1e-4
+        sample_minimization_weight: 1.0
+        batch_maximization_weight: 1.0
+        scheduler_type: "None"
+        use_ema: True
+        stage: "transformer"
+        token_factorization: False
+        ddconfig:
+          double_z: False
+          z_channels: 18
+          resolution: 128
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult: [1,2,2,4]  # num_down = len(ch_mult)-1
+          num_res_blocks: 2
+        lossconfig:
+          target: taming.modules.losses.DummyLoss
+    cond_stage_config:
+      target: taming.modules.util.Labelator
+      params:
+        n_classes: 1000
+    permuter_config:
+      target: taming.modules.transformer.permuter.ShiftPermuter
+      params:
+        shift_pos: 1000 # num_classes
+
+data:
+  class_path: main.DataModuleFromConfig
+  init_args:
+    batch_size: 4
+    num_workers: 16
+    train:
+      target: taming.data.imagenet.ImageNetTrain
+      params:
+        config:
+          size: 128
+          subset:
+    validation:
+      target: taming.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 128
+          subset:
+    test:
+      target: taming.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 128
+          subset:
+
+ckpt_path: null # to resume

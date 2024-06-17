@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this codebase, please cite it as below."
+authors:
+- family-names: "Luo"
+  given-names: "Zhuoyan"
+- family-names: "Shi"
+  given-names: "Fengyuan"
+- family-names: "Ge"
+  given-names: "Yixiao"
+title: "Open-MAGVIT2"
+version: 1.0
+date-released: 2024-06-14
+url: "https://github.com/TencentARC/Open-MAGVIT2"
