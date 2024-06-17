@@ -3,22 +3,16 @@
 <img src="./assets/Logo_2.png" height=300>
 </p>
 
-<!-- Until now, VQGAN, the initial tokenizer is still acting an indispensible role in mainstream tasks, especially autoregressive visual generation. Limited by the bottleneck of the size of codebook and the utilization of code, the capability of AR generation with VQGAN is underestimated. -->
-
 VQGAN remains essential in autoregressive visual generation, despite limitations in codebook size and utilization that underestimate its capabilities. [MAGVIT2](https://arxiv.org/abs/2310.05737) addresses these issues with a lookup-free technique and a large codebook ($2^{18}$), showing promising results in image and video generation, and playing a key role in [VideoPoet](https://arxiv.org/abs/2312.14125). However, we currently lack access to this tokenizer. :broken_heart:
 
-In our codebase, we have re-implemented the MAGVIT-2 tokenizer in PyTorch, closely replicating the original results. We hope our efforts will foster innovation and creativity in the field of autoregressive visual generation. :green_heart:
-
-<!-- Therefore, [MAGVIT2](https://arxiv.org/abs/2310.05737) proposes a powerful tokenizer for visual generation task, which introduces a novel LookUpFree technique when quantization and extends the size of codebook to $2^{18}$, exhibiting promising performance in both image and video generation tasks. And it plays an important role in the recent state-of-the-art AR video generation model [VideoPoet](https://arxiv.org/abs/2312.14125). However, we have no access to this strong tokenizer so far. -->
-
-<!-- In the codebase, we follow the significant insights of tokenizer design in MAGVIT-2 and re-implement it with Pytorch, achieving the closest results to the original so far. We hope that our effort can foster innovation and creativity within the field of Autoregressive Visual Generation. -->
+In our codebase, we have re-implemented the MAGVIT2 tokenizer in PyTorch, closely replicating the original results. We hope our efforts will foster innovation and creativity in the field of autoregressive visual generation. :green_heart:
 
 ### 📰 News
 * **[2024.06.17]** :fire::fire::fire: We release the training code of the image tokenizer and checkpoints for different resolutions, **achieving state-of-the-art performance (`0.39 rFID` for 8x downsampling)** compared to VQGAN, MaskGIT, and recent TiTok, LlamaGen, and OmniTokenizer.
 
 ### 🎤 TODOs
 * [ ] Better image tokenizer with scale-up training.
-* [ ] Finalize the training of autoregressive model.
+* [ ] Finalize the training of the autoregressive model.
 * [ ] Video tokenizer and the corresponding autoregressive model.
 
 **🤗 Open-MAGVIT2 is still at an early stage and under active development. Stay tuned for the update!**
@@ -26,11 +20,12 @@ In our codebase, we have re-implemented the MAGVIT-2 tokenizer in PyTorch, close
 
 ## 📖 Implementations
 
+**Figure 1.** The framework of the Open-MAGVIT2 tokenizer, composed of an encoder, a lookup-free quantizer, and a decoder.
+
 <p align="center">
 <img src="./assets/framework.png">
 </p>
 
-Figure 1. The framework of the Open-MAGVIT2 tokenizer, composed of an encoder, a lookup-free quantizer, and a decoder.
 
 ### 🛠️ Installation
 - **Env**: We have tested on `Python 3.8.8` and `CUDA 11.7` (other versions may also be fine).
