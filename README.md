@@ -55,14 +55,17 @@ We follow the design of Generator in MAGVIT-2 but use PatchGAN instead of StyleG
 | Method | Token Type | #Tokens | Train Data | Codebook Size | rFID | PSNR  | Codebook Utilization | Checkpoint |
 |:------:|:----:|:-----:|:-----:|:-------------:|:----:|:----:|:---------------------:|:----:|
 |VQGAN | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet  | 1024 | 7.94 | 19.4 | - | - |
+|SD-VQGAN | 2D | 16 $\times$ 16 | OpenImages | 16384 | 5.15 | - | - | - |
 |MaskGIT | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet  | 1024 | 2.28 | - | - | -|
 |LlamaGen | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet  | 16384 | 2.19  | 20.79 | 97% | -|
 |**:fire:Open-MAGVIT2** | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet | 262144 | **1.53** | **21.53** | **100%** | [IN256_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_256_B.ckpt)|
 |ViT-VQGAN| 2D | 32 $\times$ 32 | 256 $\times$ 256 ImageNet | 8192 | 1.28 |  - | - | - |
 |VQGAN | 2D | 32 $\times$ 32 | OpenImages | 16384 | 1.19 | 23.38 | - | - |
+|SD-VQGAN | 2D | 32 $\times$ 32 | OpenImages | 16384 | 1.14 | - | - | - |
 |OmniTokenizer-VQ| 2D | 32 $\times$ 32 | 256 $\times$ 256 ImageNet | 8192 | 1.11 | -| - | -|
 |LlamaGen | 2D | 32 $\times$ 32 | 256 $\times$ 256 ImageNet | 16384 | 0.59 | 24.45 | - | - |
 |**:fire:Open-MAGVIT2*** | 2D | 32 $\times$ 32 | 128 $\times$ 128 ImageNet | 262144 | **0.39** | **25.78** | **100%** |[IN128_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_B.ckpt)|
+|SD-VQGAN | 2D | 64 $\times$ 64 | OpenImages | 16384 | 0.58 | - | - | - |
 |TiTok-L | 1D | 32 |  256 $\times$ 256 ImageNet | 4096 | 2.21 | - | - | - |
 |TiTok-B | 1D | 64 |  256 $\times$ 256 ImageNet | 4096 | 1.70 | - | - | - | 
 |TiTok-S | 1D | 128 | 256 $\times$ 256 ImageNet | 4096  | 1.71 | - | - | - |
