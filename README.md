@@ -109,6 +109,18 @@ bash run_B_128.sh
 bash run_B_256.sh
 ```
 
+#### 🚀 Evaluation Scripts
+* $128\times 128$ Tokenizer Evaluation
+```
+python evaluation.py --config_file configs/imagenet_lfqgan_128_B.yaml --ckpt_path "Your Path" --image_size 128
+```
+
+* $256\times 256$ Tokenizer Evaluation
+```
+python evaluation.py --config_file configs/imagenet_lfqgan_256_B.yaml --ckpt_path "Your Path" --image_size 256
+```
+
+
 ### Stage II: Training of Autoregressive Generation
 <!-- * `Stage II AutoRegressive Training`: -->
 MAGVIT2 utilizes Non-AutoRegressive transformer for image generation. Instead, we would like to exploit the potential of Autogressive Visual Generation with the relatively large codebook. We are currently exploring Stage II training.

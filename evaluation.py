@@ -22,22 +22,23 @@ from metrics.inception import InceptionV3
 import lpips
 from skimage.metrics import peak_signal_noise_ratio as psnr_loss
 from skimage.metrics import structural_similarity as ssim_loss
+import argparse
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def load_config(config_path, display=False):
-  config = OmegaConf.load(config_path)
-  if display:
-    print(yaml.dump(OmegaConf.to_container(config)))
-  return config
+    config = OmegaConf.load(config_path)
+    if display:
+        print(yaml.dump(OmegaConf.to_container(config)))
+    return config
 
 def load_vqgan_new(config, ckpt_path=None, is_gumbel=False):
-  model = VQModel(**config.model.init_args)
-  if ckpt_path is not None:
-    sd = torch.load(ckpt_path, map_location="cpu")["state_dict"]
-    missing, unexpected = model.load_state_dict(sd, strict=False)
-  return model.eval()
+    model = VQModel(**config.model.init_args)
+    if ckpt_path is not None:
+        sd = torch.load(ckpt_path, map_location="cpu")["state_dict"]
+        missing, unexpected = model.load_state_dict(sd, strict=False)
+    return model.eval()
 
 
 def get_obj_from_str(string, reload=False):
@@ -55,15 +56,15 @@ def instantiate_from_config(config):
     return get_obj_from_str(config["class_path"])(**config.get("init_args", dict()))
 
 def custom_to_pil(x):
-  x = x.detach().cpu()
-  x = torch.clamp(x, -1., 1.)
-  x = (x + 1.)/2.
-  x = x.permute(1,2,0).numpy()
-  x = (255*x).astype(np.uint8)
-  x = Image.fromarray(x)
-  if not x.mode == "RGB":
-    x = x.convert("RGB")
-  return x
+    x = x.detach().cpu()
+    x = torch.clamp(x, -1., 1.)
+    x = (x + 1.)/2.
+    x = x.permute(1,2,0).numpy()
+    x = (255*x).astype(np.uint8)
+    x = Image.fromarray(x)
+    if not x.mode == "RGB":
+        x = x.convert("RGB")
+    return x
 
 def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
     """Numpy implementation of the Frechet Distance.
@@ -124,19 +125,28 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2, eps=1e-6):
 
     return diff.dot(diff) + np.trace(sigma1) + np.trace(sigma2) - 2 * tr_covmean
 
-def main():
-    config_data = OmegaConf.load('configs/imagenet_lfqgan_128_B.yaml')
-    config_data.data.init_args.validation.params.config.size = 128
-    config_data.data.init_args.batch_size = 8
+def get_args():
+    parser = argparse.ArgumentParser(description="inference parameters")
+    parser.add_argument("--config_file", required=True, type=str)
+    parser.add_argument("--ckpt_path", required=True, type=str)
+    parser.add_argument("--image_size", default=128, type=int)
+    parser.add_argument("--batch_size", default=4, type=int)
 
-    config_model = load_config("configs/imagenet_lfqgan_128_B.yaml", display=False)
-    model = load_vqgan_new(config_model, ckpt_path="").to(DEVICE) #please specify your own path here
+    return parser.parse_args()
+
+def main(args):
+    config_data = OmegaConf.load(args.config_file)
+    config_data.data.init_args.validation.params.config.size = args.image_size
+    config_data.data.init_args.batch_size = args.batch_size
+
+    config_model = load_config(args.config_file, display=False)
+    model = load_vqgan_new(config_model, ckpt_path=args.ckpt_path).to(DEVICE) #please specify your own path here
     codebook_size = config_model.model.init_args.n_embed
     
     #usage
     usage = {}
     for i in range(codebook_size):
-      usage[i] = 0
+        usage[i] = 0
 
 
     # FID score related
@@ -243,4 +253,5 @@ def main():
     print("utilization", utilization)
   
 if __name__ == "__main__":
-  main()
+    args = get_args()
+    main(args)
