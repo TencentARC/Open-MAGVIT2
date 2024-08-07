@@ -101,12 +101,12 @@ We follow the design of Generator in MAGVIT-2 but use PatchGAN instead of StyleG
 #### 🚀 Training Scripts
 * $128\times 128$ Tokenizer Training
 ```
-bash run_B_128.sh
+bash run_128_B.sh
 ```
 
 * $256\times 256$ Tokenizer Training
 ```
-bash run_B_256.sh
+bash run_256_B.sh
 ```
 
 #### 🚀 Evaluation Scripts
