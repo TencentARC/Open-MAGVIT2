@@ -1,0 +1,2 @@
+include configs/gpu/*.yaml
+include configs/npu/*.yaml
