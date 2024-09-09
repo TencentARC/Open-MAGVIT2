@@ -13,9 +13,9 @@ from taming.modules.ema import LitEma
 
 #TODO: move this function to a utils package
 def instantiate_from_config(config):
-    if not "class_path" in config:
-        raise KeyError("Expected key `class_path` to instantiate.")
-    return get_obj_from_str(config["class_path"])(**config.get("init_args", dict()))
+    if not "target" in config:
+        raise KeyError("Expected key `target` to instantiate.")
+    return get_obj_from_str(config["target"])(**config.get("params", dict()))
 
 class VQModel(L.LightningModule):
     def __init__(self,
