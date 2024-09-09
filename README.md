@@ -11,7 +11,7 @@
 
 <div align="center">
 
-> [**OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation**](https://arxiv.org/abs/2406.06525)<br>
+> [**OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation**](https://arxiv.org/pdf/2409.04410)<br>
 > [Zhuoyan Luo](https://robertluo1.github.io/), [Fengyuan Shi](https://shifengyuan1999.github.io/), [Yixiao Ge](https://geyixiao.com/), [Yujiu Yang](https://sites.google.com/view/iigroup-thu/people), [Limin Wang](https://wanglimin.github.io/), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en)
 > <br>ARC Lab Tecent PCG, Tsinghua University, Nanjing University<br>
 </div>
