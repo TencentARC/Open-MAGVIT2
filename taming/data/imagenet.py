@@ -134,7 +134,7 @@ class ImageNetTrain(ImageNetBase):
     def _prepare(self):
         self.random_crop = retrieve(self.config, "ImageNetTrain/random_crop",
                                     default=True)
-        cachedir = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("../../data/imagenet")) #specfy the path
+        cachedir = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("../data")) #specfy the path
         self.root = os.path.join(cachedir, self.NAME)
         self.datadir = self.root
         if self.config["subset"] is not None: # for training in subset
@@ -194,7 +194,7 @@ class ImageNetValidation(ImageNetBase):
     def _prepare(self):
         self.random_crop = retrieve(self.config, "ImageNetValidation/random_crop",
                                     default=False)
-        cachedir = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("../../data/imagenet"))
+        cachedir = os.environ.get("XDG_CACHE_HOME", os.path.expanduser("../data")) #specfy the path
         self.root = os.path.join(cachedir, self.NAME)
         self.datadir = self.root
         if self.config["subset"] is not None: # for debugging

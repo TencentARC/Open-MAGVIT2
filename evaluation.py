@@ -9,6 +9,11 @@ import os
 import sys
 sys.path.append(os.getcwd())
 import torch
+try:
+    import torch_npu
+except: 
+    pass
+
 from omegaconf import OmegaConf
 import importlib
 import yaml
@@ -24,8 +29,10 @@ from skimage.metrics import peak_signal_noise_ratio as psnr_loss
 from skimage.metrics import structural_similarity as ssim_loss
 import argparse
 
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+if hasattr(torch, "npu"):
+    DEVICE = torch.device("npu:0" if torch_npu.npu.is_available() else "cpu")
+else:
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 def load_config(config_path, display=False):
     config = OmegaConf.load(config_path)
@@ -39,7 +46,6 @@ def load_vqgan_new(config, ckpt_path=None, is_gumbel=False):
         sd = torch.load(ckpt_path, map_location="cpu")["state_dict"]
         missing, unexpected = model.load_state_dict(sd, strict=False)
     return model.eval()
-
 
 def get_obj_from_str(string, reload=False):
     print(string)

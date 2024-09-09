@@ -1,18 +1,34 @@
-## Open-MAGVIT2: Democratizing Autoregressive Visual Generation
+## OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation
 <p align="center">
 <img src="./assets/Logo_2.png" height=300>
 </p>
 
-VQGAN remains essential in autoregressive visual generation, despite limitations in codebook size and utilization that underestimate its capabilities. [MAGVIT2](https://arxiv.org/abs/2310.05737) addresses these issues with a lookup-free technique and a large codebook ($2^{18}$), showing promising results in image and video generation, and playing a key role in [VideoPoet](https://arxiv.org/abs/2312.14125). However, we currently lack access to this tokenizer. :broken_heart:
+<div align="center">
 
-In our codebase, we have re-implemented the MAGVIT2 tokenizer in PyTorch, closely replicating the original results. We hope our efforts will foster innovation and creativity in the field of autoregressive visual generation. :green_heart:
+[![arXiv](https://img.shields.io/badge/arXiv%20paper-2409.04410-b31b1b.svg)](https://arxiv.org/pdf/2409.04410)&nbsp;
+
+</div>
+
+<div align="center">
+
+> [**OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation**](https://arxiv.org/abs/2406.06525)<br>
+> [Zhuoyan Luo](https://robertluo1.github.io/), [Fengyuan Shi](https://shifengyuan1999.github.io/), [Yixiao Ge](https://geyixiao.com/), [Yujiu Yang](https://sites.google.com/view/iigroup-thu/people), [Limin Wang](https://wanglimin.github.io/), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en)
+> <br>ARC Lab Tecent PCG, Tsinghua University, Nanjing University<br>
+</div>
+
+<p align="center">
+<img src="./assets/abstract_fig.png" width=95%>
+</p>
+
+We present Open-MAGVIT2, a family of auto-regressive image generation models ranging from 300M to 1.5B. The Open-MAGVIT2 project produces an open-source replication of Google's MAGVIT-v2 tokenizer, a tokenizer with a super-large codebook (i.e., $2^{18}$ codes), and achieves the state-of-the-art reconstruction performance (1.17 rFID) on ImageNet $256 \times 256$. Furthermore, we explore its application in plain auto-regressive models and validate scalability properties. To assist auto-regressive models in predicting with a super-large vocabulary, we factorize it into two sub-vocabulary of different sizes by asymmetric token factorization, and further introduce ''next sub-token prediction'' to enhance sub-token interaction for better generation quality.  We release all models and codes to foster innovation and creativity in the field of auto-regressive visual generation. :sparkling_heart:
 
 ### 📰 News
+* **[2024.09.05]** :fire::fire::fire: We release a better image tokenizer and a family of auto-regressive models ranging from 300M to 1.5B.
 * **[2024.06.17]** :fire::fire::fire: We release the training code of the image tokenizer and checkpoints for different resolutions, **achieving state-of-the-art performance (`0.39 rFID` for 8x downsampling)** compared to VQGAN, MaskGIT, and recent TiTok, LlamaGen, and OmniTokenizer.
 
 ### 🎤 TODOs
-* [ ] Better image tokenizer with scale-up training.
-* [ ] Finalize the training of the autoregressive model.
+* [ &#10004; ] Better image tokenizer with scale-up training.
+* [ &#10004; ] Finalize the training of the autoregressive model.
 * [ ] Video tokenizer and the corresponding autoregressive model.
 
 **🤗 Open-MAGVIT2 is still at an early stage and under active development. Stay tuned for the update!**
@@ -20,17 +36,27 @@ In our codebase, we have re-implemented the MAGVIT2 tokenizer in PyTorch, closel
 
 ## 📖 Implementations
 
-**Figure 1.** The framework of the Open-MAGVIT2 tokenizer, composed of an encoder, a lookup-free quantizer (LFQ), and a decoder.
+**Note that our experments are all using Ascned 910B for training. But we have tested our models on V100. The performance gap is narrow.**
+
+**Figure 1.** The framework of the Open-MAGVIT2.
 
 <p align="center">
 <img src="./assets/framework.png">
 </p>
 
-
 ### 🛠️ Installation
-- **Env**: We have tested on `Python 3.8.8` and `CUDA 11.7` (other versions may also be fine).
-- **Dependencies**: `pip install -r requirements`
-- **Datasets**
+#### GPU
+- **Env**: We have tested on `Python 3.8.8` and `CUDA 11.8` (other versions may also be fine).
+- **Dependencies**: `pip install -r requirements.txt`
+
+#### NPU
+- **Env**: `Python 3.9.16` and [`CANN 8.0.T13`](https://www.hiascend.com/en/software/cann)
+- **Main Dependencies**: `torch=2.1.0+cpu` + `torch-npu=2.1.0.post3-20240523` + [`Lightning`](https://github.com/hipudding/pytorch-lightning/tree/npu_support)
+- **Other Dependencies**: see in `requirements.txt`
+
+#### Datasets
+
+We use Imagenet2012 as our dataset.
 ```
 imagenet
 └── train/
@@ -46,107 +72,73 @@ imagenet
 
 ### Stage I: Training of Visual Tokenizer
 <!-- * `Stage I Tokenizer Training`: -->
-We follow the design of Generator in MAGVIT-2 but use PatchGAN instead of StyleGAN as Discriminator for GAN training. We use the combination of Loss utilized in MAGVIT-2 and VQGAN for better training stability and reconstruction quality. All the training details can be found in the config files. Note that, we train our model using 32 $\times$ V100.
-
-
-#### 🍺 Quantitative Comparison
-
-**Table 1.** Reconstruction performance of different tokenizers on $256 \times 256$ ImageNet 50k validation set. Open-MAGVIT2 achieves SOTA results on different downsampling rates.
-| Method | Token Type | #Tokens | Train Data | Codebook Size | rFID | PSNR  | Codebook Utilization | Checkpoint |
-|:------:|:----:|:-----:|:-----:|:-------------:|:----:|:----:|:---------------------:|:----:|
-|VQGAN | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet  | 1024 | 7.94 | 19.4 | - | - |
-|SD-VQGAN | 2D | 16 $\times$ 16 | OpenImages | 16384 | 5.15 | - | - | - |
-|MaskGIT | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet  | 1024 | 2.28 | - | - | -|
-|LlamaGen | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet  | 16384 | 2.19  | 20.79 | 97% | -|
-|**:fire:Open-MAGVIT2** | 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet | 262144 | **1.53** | **21.53** | **100%** | [IN256_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_256_B.ckpt)|
-|ViT-VQGAN| 2D | 32 $\times$ 32 | 256 $\times$ 256 ImageNet | 8192 | 1.28 |  - | - | - |
-|VQGAN | 2D | 32 $\times$ 32 | OpenImages | 16384 | 1.19 | 23.38 | - | - |
-|SD-VQGAN | 2D | 32 $\times$ 32 | OpenImages | 16384 | 1.14 | - | - | - |
-|OmniTokenizer-VQ| 2D | 32 $\times$ 32 | 256 $\times$ 256 ImageNet | 8192 | 1.11 | -| - | -|
-|LlamaGen | 2D | 32 $\times$ 32 | 256 $\times$ 256 ImageNet | 16384 | 0.59 | 24.45 | - | - |
-|**:fire:Open-MAGVIT2*** | 2D | 32 $\times$ 32 | 128 $\times$ 128 ImageNet | 262144 | **0.39** | **25.78** | **100%** |[IN128_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_B.ckpt)|
-|SD-VQGAN | 2D | 64 $\times$ 64 | OpenImages | 16384 | 0.58 | - | - | - |
-|TiTok-L | 1D | 32 |  256 $\times$ 256 ImageNet | 4096 | 2.21 | - | - | - |
-|TiTok-B | 1D | 64 |  256 $\times$ 256 ImageNet | 4096 | 1.70 | - | - | - | 
-|TiTok-S | 1D | 128 | 256 $\times$ 256 ImageNet | 4096  | 1.71 | - | - | - |
-
-(*) denotes that the results are from the direct inference using the model trained with $128 \times 128$ resolution without fine-tuning.
-
-<!-- |MAGVIT2 | 16 $\times$ 16 2D token | 128 $\times$ 128 ImageNet | 262144 | 1.21 | - | - | - | - |
-|Open-MAGVIT2 | 16 $\times$ 16 2D token |  128 $\times$ 128 ImageNet | 262144 | 1.56 | - | 100% | [imagenet_128_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_B.ckpt)|  -->
-
-
-**Table 2.** Compare with the original MAGVIT2 by training and testing with both $128 \times 128$ resolution as used in its original paper. ImageNet 50k validation set is used for testing.
-|Method| Token Type | #Tokens | Data | LFQ | Large Codebook | Up/Down Sampler | rFID| URL | 
-|:----:|:----:|:----:|:----:|:----------:|:-------:|:------:|:----------:|:------:|
-|MAGVIT2 | 2D | $16 \times 16$ | 128 $\times$ 128 ImageNet | √ |  √    |   √ |1.21 | - |
-|Open-MAGVIT2 | 2D | $16 \times 16$ |128 $\times$ 128 ImageNet | √ |  √ |  √ | 1.56 | [IN128_Base](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_B.ckpt) |
-
-
-#### :eyes: Reconstruction Visualization
-
-**Figure 2.** Visualization of the Open-MAGVIT2 tokenizer trained at $256 \times 256$ resolution and tested at $256 \times 256$ resolution (`imagenet_256_Base` version). (a) indicates the original images while (b) specifies the reconstruction images.
-<p align="center">
-    <img src="./assets/case.png">
-</p>
-
-
-**Figure 3.** Visualization of the Open-MAGVIT2 tokenizer trained at $128 \times 128$ resolution and tested at $512 \times 512$ resolution (`imagenet_128_Base` version). (a) indicates the original images while (b) specifies the reconstruction images.
-<p align="center">
-    <img src="./assets/case_2.png">
-</p>
-
-
-
 #### 🚀 Training Scripts
 * $128\times 128$ Tokenizer Training
 ```
-bash run_128_B.sh
+bash scripts/train_tokenizer/run_128_L.sh MASTER_ADDR MASTER_PORT NODE_RANK
 ```
 
 * $256\times 256$ Tokenizer Training
 ```
-bash run_256_B.sh
+bash scripts/train_tokenizer/run_256_L.sh MASTER_ADDR MASTER_PORT NODE_RANK
 ```
 
 #### 🚀 Evaluation Scripts
 * $128\times 128$ Tokenizer Evaluation
 ```
-python evaluation.py --config_file configs/imagenet_lfqgan_128_B.yaml --ckpt_path "Your Path" --image_size 128
+bash scripts/evaluation/evaluation_128.sh
 ```
 
 * $256\times 256$ Tokenizer Evaluation
 ```
-python evaluation.py --config_file configs/imagenet_lfqgan_256_B.yaml --ckpt_path "Your Path" --image_size 256
+bash scripts/evaluation/evaluation_256.sh
 ```
 
+#### 🍺 Performance and Models
 
-### Stage II: Training of Autoregressive Generation
-<!-- * `Stage II AutoRegressive Training`: -->
-MAGVIT2 utilizes Non-AutoRegressive transformer for image generation. Instead, we would like to exploit the potential of Autogressive Visual Generation with the relatively large codebook. We are currently exploring Stage II training.
+**Tokenizer** 
+| Method | Token Type | #Tokens | Train Data | Codebook Size | rFID | PSNR  | Codebook Utilization | Checkpoint |
+|:------:|:----:|:-----:|:-----:|:-------------:|:----:|:----:|:---------------------:|:----:|
+|Open-MAGVIT2-20240617| 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet | 262144 | 1.53 | 21.53 | 100% | - |
+|Open-MAGVIT2-20240617| 2D | 16 $\times$ 16 | 128 $\times$ 128 ImageNet | 262144 | 1.56 | 24.45 | 100% | - |
+|Open-MAGVIT2| 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet | 262144 | **1.17** | **21.90** | **100%** | [IN256_Large](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_256_L.ckpt)|
+|Open-MAGVIT2| 2D | 16 $\times$ 16 | 128 $\times$ 128 ImageNet | 262144 | **1.18** | **25.08** | **100%** |[IN128_Large](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_L.ckpt)|
+|Open-MAGVIT2*| 2D | 32 $\times$ 32 | 128 $\times$ 128 ImageNet | 262144 | **0.34** | **26.19** | **100%** |above|
 
+(*) denotes that the results are from the direct inference using the model trained with $128 \times 128$ resolution without fine-tuning.
+
+### Stage II: Training of Auto-Regressive Models
+
+#### 🚀 Training Scripts
+Please see in scripts/train_autogressive/run.sh for different model configurations.
+```
+bash scripts/train_autogressive/run.sh MASTER_ADDR MASTER_PORT NODE_RANK
+```
+
+#### 🚀 Sample Scripts
+Please see in scripts/train_autogressive/run.sh for different sampling hyper-parameters for different scale of models.
+```
+bash scripts/evaluation/sample_npu.sh or scripts/evaluation/sample_gpu.sh Your_Total_Rank
+```
+
+#### 🍺 Performance and Models
+| Method | Params| #Tokens | FID | IS | Checkpoint |
+|:------:|:-----:|:-------:|:---:|:--:|:----------:|
+|Open-MAGVIT2| 343M | 16 $\times$ 16 | 3.08 | 258.26 | [AR_256_B](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/AR_256_B.ckpt)|
+|Open-MAGVIT2| 804M | 16 $\times$ 16 | 2.51 | 271.70 | [AR_256_L](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/AR_256_L.ckpt)|
+|Open-MAGVIT2| 1.5B | 16 $\times$ 16 | 2.33 | 271.77 | [AR_256_XL](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/AR_256_XL.ckpt)|
 
 ## ❤️ Acknowledgement
-We thank [Lijun Yu](https://me.lj-y.com/) for his encouraging discussions. We refer a lot from [VQGAN](https://github.com/CompVis/taming-transformers) and [MAGVIT](https://github.com/google-research/magvit). Thanks for their wonderful work.
+We thank [Lijun Yu](https://me.lj-y.com/) for his encouraging discussions. We refer a lot from [VQGAN](https://github.com/CompVis/taming-transformers) and [MAGVIT](https://github.com/google-research/magvit). We also refer to [LlamaGen](https://github.com/FoundationVision/LlamaGen), [VAR](https://github.com/FoundationVision/VAR) and [RQVAE](https://github.com/kakaobrain/rq-vae-transformer). Thanks for their wonderful work.
 
 ## ✏️ Citation
-If you found the codebase helpful, please cite it.
+If you found the codebase and our work helpful, please cite it and give us a star :star:.
 ```
-@software{Luo_Open-MAGVIT2_2024,
-author = {Luo, Zhuoyan and Shi, Fengyuan and Ge, Yixiao},
-month = jun,
-title = {{Open-MAGVIT2}},
-url = {https://github.com/TencentARC/Open-MAGVIT2},
-version = {1.0},
-year = {2024}
+@article{luo2024open-magvit2,
+  title={Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-Regressive Visual Generation},
+  author={Luo, Zhuoyan and Shi, Fengyuan and Ge, Yixiao and Yang, Yujiu and Wang, Limin and Shan, Ying},
+  journal={arXiv preprint arXiv:2409.04410},
+  year={2024}
 }
+```
 
-@inproceedings{
-yu2024language,
-title={Language Model Beats Diffusion - Tokenizer is key to visual generation},
-author={Lijun Yu and Jose Lezama and Nitesh Bharadwaj Gundavarapu and Luca Versari and Kihyuk Sohn and David Minnen and Yong Cheng and Agrim Gupta and Xiuye Gu and Alexander G Hauptmann and Boqing Gong and Ming-Hsuan Yang and Irfan Essa and David A Ross and Lu Jiang},
-booktitle={The Twelfth International Conference on Learning Representations},
-year={2024},
-url={https://openreview.net/forum?id=gzqrANCF4g}
-}
-```

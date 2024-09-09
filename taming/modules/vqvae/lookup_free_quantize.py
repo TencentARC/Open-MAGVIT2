@@ -43,6 +43,9 @@ def unpack_one(t, ps, pattern):
 
 # entropy
 
+# def log(t, eps = 1e-5):
+#     return t.clamp(min = eps).log()
+
 def entropy(prob):
     return (-prob * torch.log(prob + 1e-5)).sum(dim=-1)
 
@@ -93,7 +96,11 @@ def entropy_loss(
     log_probs = F.log_softmax(logits / temperature + eps, -1)
 
     if mask is not None:
+        # avg_probs = probs[mask].mean(tuple(range(probs.ndim - 1)))
+        # avg_probs = einx.mean("... D -> D", probs[mask])
+
         avg_probs = masked_mean(probs, mask)
+        # avg_probs = einx.mean("... D -> D", avg_probs)
     else:
         avg_probs = reduce(probs, "... D -> D", "mean")
 
@@ -101,6 +108,7 @@ def entropy_loss(
 
     sample_entropy = -torch.sum(probs * log_probs, -1)
     if mask is not None:
+        # sample_entropy = sample_entropy[mask].mean()
         sample_entropy = masked_mean(sample_entropy, mask).mean()
     else:
         sample_entropy = torch.mean(sample_entropy)
@@ -121,6 +129,7 @@ class LFQ(Module):
         sample_minimization_weight=1.0,
         batch_maximization_weight=1.0,
         token_factorization = False,
+        factorized_bits = [9, 9]
     ):
         super().__init__()
 
@@ -147,16 +156,18 @@ class LFQ(Module):
         self.batch_maximization_weight = batch_maximization_weight
 
         # for no auxiliary loss, during inference
-        self.token_factorization = token_factorization ## only utilized in second stage
+        self.token_factorization = token_factorization
         if not self.token_factorization: #for first stage model
-            self.register_buffer('mask', 2 ** torch.arange(self.codebook_dim - 1, -1, -1), persistent=False)
+            self.register_buffer('mask', 2 ** torch.arange(self.codebook_dim), persistent=False)
         else:
-            k = self.codebook_dim // 2
-            self.register_buffer("mask", 2 ** torch.arange(k - 1, -1, -1), persistent=False)
+            self.factorized_bits = factorized_bits
+            self.register_buffer("pre_mask", 2** torch.arange(factorized_bits[0]), persistent=False)
+            self.register_buffer("post_mask", 2**torch.arange(factorized_bits[1]), persistent=False)
 
         self.register_buffer('zero', torch.tensor(0.), persistent = False)
 
         # codes
+
         all_codes = torch.arange(codebook_size)
         bits = self.indices_to_bits(all_codes)
         codebook = bits * 2.0 - 1.0
@@ -169,7 +180,7 @@ class LFQ(Module):
     
     def indices_to_bits(self, x):
         """
-        x: long tensor of indices for constructing codebook, but actually not utilized in all the experiments.
+        x: long tensor of indices
 
         returns big endian bits
         """
@@ -178,16 +189,18 @@ class LFQ(Module):
         x = (x.unsqueeze(-1) & mask) != 0
         return x
 
-    def get_codebook_entry(self, x, bhwc):
+    def get_codebook_entry(self, x, bhwc, order): #0610
         if self.token_factorization:
-            k = self.codebook_dim // 2
-            mask = 2 ** torch.arange(k - 1, -1, -1, device=x.device, dtype=torch.long)
+            if order == "pre":
+                mask = 2 ** torch.arange(self.factorized_bits[0], device=x.device, dtype=torch.long)
+            else:
+                mask = 2 ** torch.arange(self.factorized_bits[1], device=x.device, dtype=torch.long)
         else:
-            mask = 2 ** torch.arange(self.codebook_dim-1, -1, -1, device=x.device, dtype=torch.long)
+            mask = 2 ** torch.arange(self.codebook_dim, device=x.device, dtype=torch.long)
         
         x = (x.unsqueeze(-1) & mask) != 0
         x = x * 2.0 - 1.0 #back to the float
-        ## scale back to the desired shape
+        ## scale back to the 
         b, h, w, c = bhwc
         x = rearrange(x, "b (h w) c -> b h w c", h=h, w=w, c=c)
         x = rearrange(x, "b h w c -> b c h w")
@@ -227,6 +240,7 @@ class LFQ(Module):
     def forward(
         self,
         x,
+        inv_temperature = 100.,
         return_loss_breakdown = False,
         mask = None,
         return_loss = True,
@@ -238,7 +252,6 @@ class LFQ(Module):
         d - feature dimension, which is also log2(codebook size)
         c - number of codebook dim
         """
-
 
         x = rearrange(x, 'b d ... -> b ... d')
         x, ps = pack_one(x, 'b * d')
@@ -252,10 +265,8 @@ class LFQ(Module):
 
         # calculate indices
         if self.token_factorization:
-            k = self.codebook_dim // 2
-            indices_pre = reduce((quantized[..., :k] > 0).int() * self.mask.int(), "b n c d -> b n c", "sum")
-            indices_post = reduce((quantized[..., k:] > 0).int() * self.mask.int(), "b n c d -> b n c", "sum")
-            # indices_post = 2**k + indices_post #shifter to the 1024
+            indices_pre = reduce((quantized[..., :self.factorized_bits[0]] > 0).int() * self.pre_mask.int(), "b n c d -> b n c", "sum")
+            indices_post = reduce((quantized[..., self.factorized_bits[0]:] > 0).int() * self.post_mask.int(), "b n c d -> b n c", "sum")
         else:
             indices = reduce((quantized > 0).int() * self.mask.int(), 'b n c d -> b n c', 'sum')
 
@@ -272,15 +283,13 @@ class LFQ(Module):
 
             avg_probs = self.zero
         else:
-            ## calculate the codebook_entropy needed for one batch evaluation
-            #------------------------------------------------------------------
             # logits = 2 * einsum('... i d, j d -> ... i j', x, self.codebook)
             # probs = F.softmax(logits / 0.01, -1)
             # avg_probs = reduce(probs, "b n c d -> b d", "mean")
             # avg_probs = torch.sum(avg_probs, 0) #batch dimension
-            #-------------------------------------------------------------------
             # if not training, just return dummy 0
             per_sample_entropy = codebook_entropy = self.zero
+            ## calculate the codebook_entropy needed for one batch evaluation
             entropy_aux_loss = self.zero
             avg_probs = self.zero
 
@@ -327,3 +336,18 @@ class LFQ(Module):
             return ret
 
         return ret, LossBreakdown(per_sample_entropy, codebook_entropy, commit_loss, avg_probs)
+
+if __name__ == "__main__":
+    quantizer = LFQ(
+    codebook_size = 2**18,      # codebook size, must be a power of 2
+    dim = 18,                   # this is the input feature dimension, defaults to log2(codebook_size) if not defined
+    sample_minimization_weight = 1.0,        # within entropy loss, how much weight to give to diversity of codes, taken from https://arxiv.org/abs/1911.05894
+    batch_maximization_weight = 1.0
+)
+
+    image_feats = torch.randn(2, 18, 16, 16) #16 is dim, must be power of 2 of codebook_size
+
+    quantized, indices, entropy_aux_loss = quantizer(image_feats, inv_temperature=100.)  # you may want to experiment with temperature
+
+    assert image_feats.shape == quantized.shape
+    assert (quantized == quantizer.indices_to_codes(indices)).all()

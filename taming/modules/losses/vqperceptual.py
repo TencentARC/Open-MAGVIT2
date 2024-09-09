@@ -55,7 +55,7 @@ def non_saturate_gen_loss(logits_fake):
 
 def non_saturate_discriminator_loss(logits_real, logits_fake):
     B, _, _, _ = logits_fake.shape
-    logits_real = logits_fake.reshape(B, -1)
+    logits_real = logits_real.reshape(B, -1)
     logits_fake = logits_fake.reshape(B, -1)
     logits_fake = logits_fake.mean(dim=-1)
     logits_real = logits_real.mean(dim=-1)

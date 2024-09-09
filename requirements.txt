@@ -1,6 +1,6 @@
-torch==2.0.0
-torchvision==0.15.1
-lightning==2.2.5
+torch==2.1.1 --index-url https://download.pytorch.org/whl/cu118
+torchvision==0.16.1 --index-url https://download.pytorch.org/whl/cu118
+lightning==2.2.0
 jsonargparse[signatures]>=4.27.7
 tensorboard
 tensorboardx

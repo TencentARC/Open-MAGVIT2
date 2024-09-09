@@ -1,24 +1,28 @@
 import torch
 import torch.nn as nn
+from einops import rearrange
+import torch.nn.functional as F
 
 def swish(x):
     # swish
     return x*torch.sigmoid(x)
 
-
 class ResBlock(nn.Module):
     def __init__(self, 
                  in_filters,
                  out_filters,
-                 use_conv_shortcut = False
+                 use_conv_shortcut = False,
+                 use_agn = False,
                  ) -> None:
         super().__init__()
 
         self.in_filters = in_filters
         self.out_filters = out_filters
         self.use_conv_shortcut = use_conv_shortcut
+        self.use_agn = use_agn
 
-        self.norm1 = nn.GroupNorm(32, in_filters, eps=1e-6)
+        if not use_agn: ## agn is GroupNorm likewise skip it if has agn before
+            self.norm1 = nn.GroupNorm(32, in_filters, eps=1e-6)
         self.norm2 = nn.GroupNorm(32, out_filters, eps=1e-6)
 
         self.conv1 = nn.Conv2d(in_filters, out_filters, kernel_size=(3, 3), padding=1, bias=False)
@@ -34,7 +38,8 @@ class ResBlock(nn.Module):
     def forward(self, x, **kwargs):
         residual = x
 
-        x = self.norm1(x)
+        if not self.use_agn:
+            x = self.norm1(x)
         x = swish(x)
         x = self.conv1(x)
         x = self.norm2(x)
@@ -47,7 +52,7 @@ class ResBlock(nn.Module):
                 residual = self.nin_shortcut(residual)
 
         return x + residual
-
+    
 class Encoder(nn.Module):
     def __init__(self, *, ch, out_ch, in_channels, num_res_blocks, z_channels, ch_mult=(1, 2, 2, 4), 
                 resolution, double_z=False,
@@ -141,10 +146,16 @@ class Decoder(nn.Module):
         
         self.up = nn.ModuleList()
 
+        self.adaptive = nn.ModuleList()
+
         for i_level in reversed(range(self.num_blocks)):
             block = nn.ModuleList()
             block_out = ch*ch_mult[i_level]
+            self.adaptive.insert(0, AdaptiveGroupNorm(z_channels, block_in))
             for i_block in range(self.num_res_blocks):
+                # if i_block == 0:
+                #     block.append(ResBlock(block_in, block_out, use_agn=True))
+                # else:
                 block.append(ResBlock(block_in, block_out))
                 block_in = block_out
             
@@ -159,6 +170,8 @@ class Decoder(nn.Module):
         self.conv_out = nn.Conv2d(block_in, out_ch, kernel_size=(3, 3), padding=1)
     
     def forward(self, z):
+        
+        style = z.clone() #for adaptive groupnorm
 
         z = self.conv_in(z)
 
@@ -168,6 +181,8 @@ class Decoder(nn.Module):
         
         ## upsample
         for i_level in reversed(range(self.num_blocks)):
+            ### pass in each resblock first adaGN
+            z = self.adaptive[i_level](z, style)
             for i_block in range(self.num_res_blocks):
                 z = self.up[i_level].block[i_block](z)
             
@@ -233,21 +248,30 @@ class Upsampler(nn.Module):
         out = self.depth2space(out, block_size=2)
         return out
         
+class AdaptiveGroupNorm(nn.Module):
+    def __init__(self, z_channel, in_filters, num_groups=32, eps=1e-6):
+        super().__init__()
+        self.gn = nn.GroupNorm(num_groups=32, num_channels=in_filters, eps=eps, affine=False)
+        # self.lin = nn.Linear(z_channels, in_filters * 2)
+        self.gamma = nn.Linear(z_channel, in_filters)
+        self.beta = nn.Linear(z_channel, in_filters)
+        self.eps = eps
+    
+    def forward(self, x, quantizer):
+        B, C, _, _ = x.shape
+        # quantizer = F.adaptive_avg_pool2d(quantizer, (1, 1))
+        ### calcuate var for scale
+        scale = rearrange(quantizer, "b c h w -> b c (h w)")
+        scale = scale.var(dim=-1) + self.eps #not unbias
+        scale = scale.sqrt()
+        scale = self.gamma(scale).view(B, C, 1, 1)
 
+        ### calculate mean for bias
+        bias = rearrange(quantizer, "b c h w -> b c (h w)")
+        bias = bias.mean(dim=-1)
+        bias = self.beta(bias).view(B, C, 1, 1)
+       
+        x = self.gn(x)
+        x = scale * x + bias
 
-
-
-if __name__ == "__main__":
-    x = torch.randn(size = (2, 3, 128, 128))
-    encoder = Encoder(ch=128, in_channels=3, num_res_blocks=2, z_channels=18, out_ch=3, resolution=128)
-    decoder = Decoder(out_ch=3, z_channels=18, num_res_blocks=2, ch=128, in_channels=3, resolution=128)
-    z = encoder(x)
-    out = decoder(z)
-
-
-        
-
-
-
-
-
+        return x
