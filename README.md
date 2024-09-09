@@ -1,6 +1,7 @@
 ## OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation
+
 <p align="center">
-<img src="./assets/Logo_2.png" height=300>
+<img src="./assets/abstract_fig.png" width=95%>
 </p>
 
 <div align="center">
@@ -13,12 +14,8 @@
 
 > [**OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation**](https://arxiv.org/pdf/2409.04410)<br>
 > [Zhuoyan Luo](https://robertluo1.github.io/), [Fengyuan Shi](https://shifengyuan1999.github.io/), [Yixiao Ge](https://geyixiao.com/), [Yujiu Yang](https://sites.google.com/view/iigroup-thu/people), [Limin Wang](https://wanglimin.github.io/), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en)
-> <br>ARC Lab Tecent PCG, Tsinghua University, Nanjing University<br>
+> <br>ARC Lab Tencent PCG, Tsinghua University, Nanjing University<br>
 </div>
-
-<p align="center">
-<img src="./assets/abstract_fig.png" width=95%>
-</p>
 
 We present Open-MAGVIT2, a family of auto-regressive image generation models ranging from 300M to 1.5B. The Open-MAGVIT2 project produces an open-source replication of Google's MAGVIT-v2 tokenizer, a tokenizer with a super-large codebook (i.e., $2^{18}$ codes), and achieves the state-of-the-art reconstruction performance (1.17 rFID) on ImageNet $256 \times 256$. Furthermore, we explore its application in plain auto-regressive models and validate scalability properties. To assist auto-regressive models in predicting with a super-large vocabulary, we factorize it into two sub-vocabulary of different sizes by asymmetric token factorization, and further introduce ''next sub-token prediction'' to enhance sub-token interaction for better generation quality.  We release all models and codes to foster innovation and creativity in the field of auto-regressive visual generation. :sparkling_heart:
 
