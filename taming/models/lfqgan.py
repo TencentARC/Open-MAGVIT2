@@ -2,7 +2,6 @@ import torch
 import torch.nn.functional as F
 import lightning as L
 
-from main import instantiate_from_config
 from contextlib import contextmanager
 from collections import OrderedDict
 
@@ -10,6 +9,13 @@ from taming.modules.diffusionmodules.improved_model import Encoder, Decoder
 from taming.modules.vqvae.lookup_free_quantize import LFQ
 from taming.modules.scheduler.lr_scheduler import Scheduler_LinearWarmup, Scheduler_LinearWarmup_CosineDecay
 from taming.modules.ema import LitEma
+
+
+#TODO: move this function to a utils package
+def instantiate_from_config(config):
+    if not "class_path" in config:
+        raise KeyError("Expected key `class_path` to instantiate.")
+    return get_obj_from_str(config["class_path"])(**config.get("init_args", dict()))
 
 class VQModel(L.LightningModule):
     def __init__(self,
