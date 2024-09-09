@@ -23,6 +23,10 @@ setup(
     long_description_content_type='text/markdown',  
     url="https://github.com/TencentARC/Open-MAGVIT2",
     packages=find_packages(),
+    include_package_data=True,
+    package_data={
+        '': ['configs/gpu/*.yaml', 'configs/npu/*.yaml'],
+    },
     install_requires=parse_requirements('requirements.txt'),
     classifiers=[
         "Programming Language :: Python :: 3",
