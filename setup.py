@@ -25,7 +25,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        '': ['configs/gpu/*.yaml', 'configs/npu/*.yaml'],
+        'configs': ['configs/gpu/*.yaml', 'configs/npu/*.yaml'],
     },
     install_requires=parse_requirements('requirements.txt'),
     classifiers=[
