@@ -1,3 +1,5 @@
+import importlib
+
 import torch
 import torch.nn.functional as F
 import lightning as L
@@ -11,7 +13,14 @@ from taming.modules.scheduler.lr_scheduler import Scheduler_LinearWarmup, Schedu
 from taming.modules.ema import LitEma
 
 
-#TODO: move this function to a utils package
+#TODO: move this functions to a utils package
+def get_obj_from_str(string, reload=False):
+    module, cls = string.rsplit(".", 1)
+    if reload:
+        module_imp = importlib.import_module(module)
+        importlib.reload(module_imp)
+    return getattr(importlib.import_module(module, package=None), cls)
+
 def instantiate_from_config(config):
     if not "target" in config:
         raise KeyError("Expected key `target` to instantiate.")
