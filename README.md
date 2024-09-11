@@ -20,7 +20,7 @@
 We present Open-MAGVIT2, a family of auto-regressive image generation models ranging from 300M to 1.5B. The Open-MAGVIT2 project produces an open-source replication of Google's MAGVIT-v2 tokenizer, a tokenizer with a super-large codebook (i.e., $2^{18}$ codes), and achieves the state-of-the-art reconstruction performance (1.17 rFID) on ImageNet $256 \times 256$. Furthermore, we explore its application in plain auto-regressive models and validate scalability properties. To assist auto-regressive models in predicting with a super-large vocabulary, we factorize it into two sub-vocabulary of different sizes by asymmetric token factorization, and further introduce ''next sub-token prediction'' to enhance sub-token interaction for better generation quality.  We release all models and codes to foster innovation and creativity in the field of auto-regressive visual generation. :sparkling_heart:
 
 ### 📰 News
-* **[2024.09.05]** :fire::fire::fire: We release a better image tokenizer and a family of auto-regressive models ranging from 300M to 1.5B.
+* **[2024.09.09]** :fire::fire::fire: We release a better image tokenizer and a family of auto-regressive models ranging from 300M to 1.5B.
 * **[2024.06.17]** :fire::fire::fire: We release the training code of the image tokenizer and checkpoints for different resolutions, **achieving state-of-the-art performance (`0.39 rFID` for 8x downsampling)** compared to VQGAN, MaskGIT, and recent TiTok, LlamaGen, and OmniTokenizer.
 
 ### 🎤 TODOs
@@ -136,6 +136,15 @@ If you found the codebase and our work helpful, please cite it and give us a sta
   author={Luo, Zhuoyan and Shi, Fengyuan and Ge, Yixiao and Yang, Yujiu and Wang, Limin and Shan, Ying},
   journal={arXiv preprint arXiv:2409.04410},
   year={2024}
+}
+
+@inproceedings{
+yu2024language,
+title={Language Model Beats Diffusion - Tokenizer is key to visual generation},
+author={Lijun Yu and Jose Lezama and Nitesh Bharadwaj Gundavarapu and Luca Versari and Kihyuk Sohn and David Minnen and Yong Cheng and Agrim Gupta and Xiuye Gu and Alexander G Hauptmann and Boqing Gong and Ming-Hsuan Yang and Irfan Essa and David A Ross and Lu Jiang},
+booktitle={The Twelfth International Conference on Learning Representations},
+year={2024},
+url={https://openreview.net/forum?id=gzqrANCF4g}
 }
 ```
 
