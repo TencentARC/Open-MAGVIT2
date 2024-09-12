@@ -138,13 +138,12 @@ If you found the codebase and our work helpful, please cite it and give us a sta
   year={2024}
 }
 
-@inproceedings{
-yu2024language,
-title={Language Model Beats Diffusion - Tokenizer is key to visual generation},
-author={Lijun Yu and Jose Lezama and Nitesh Bharadwaj Gundavarapu and Luca Versari and Kihyuk Sohn and David Minnen and Yong Cheng and Agrim Gupta and Xiuye Gu and Alexander G Hauptmann and Boqing Gong and Ming-Hsuan Yang and Irfan Essa and David A Ross and Lu Jiang},
-booktitle={The Twelfth International Conference on Learning Representations},
-year={2024},
-url={https://openreview.net/forum?id=gzqrANCF4g}
+@inproceedings{yu2024language,
+  title={Language Model Beats Diffusion - Tokenizer is key to visual generation},
+  author={Lijun Yu and Jose Lezama and Nitesh Bharadwaj Gundavarapu and Luca Versari and Kihyuk Sohn and David Minnen and Yong Cheng and Agrim Gupta and Xiuye Gu and Alexander G Hauptmann and Boqing Gong and Ming-Hsuan Yang and Irfan Essa and David A Ross and Lu Jiang},
+  booktitle={The Twelfth International Conference on Learning Representations},
+  year={2024},
+  url={https://openreview.net/forum?id=gzqrANCF4g}
 }
 ```
 
