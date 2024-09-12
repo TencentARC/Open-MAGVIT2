@@ -131,8 +131,8 @@ We thank [Lijun Yu](https://me.lj-y.com/) for his encouraging discussions. We re
 ## ✏️ Citation
 If you found the codebase and our work helpful, please cite it and give us a star :star:.
 ```
-@article{luo2024open-magvit2,
-  title={Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-Regressive Visual Generation},
+@article{luo2024open,
+  title={Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-regressive Visual Generation},
   author={Luo, Zhuoyan and Shi, Fengyuan and Ge, Yixiao and Yang, Yujiu and Wang, Limin and Shan, Ying},
   journal={arXiv preprint arXiv:2409.04410},
   year={2024}
