@@ -25,7 +25,7 @@ trainer:
       name:
 
 model:
-  class_path: taming.models.lfqgan.VQModel
+  class_path: open_magvit2.taming.models.lfqgan.VQModel
   init_args:
     ddconfig:
       double_z: False
@@ -38,7 +38,7 @@ model:
       num_res_blocks: 4
 
     lossconfig:
-      target: taming.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      target: open_magvit2.taming.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
       params:
         disc_conditional: False
         disc_in_channels: 3
@@ -63,24 +63,24 @@ model:
 
 
 data:
-  class_path: main.DataModuleFromConfig
+  class_path: open_magvit2.mainDataModuleFromConfig
   init_args:
     batch_size: 8
     num_workers: 16
     train:
-      target: taming.data.imagenet.ImageNetTrain
+      target: open_magvit2.taming.data.imagenet.ImageNetTrain
       params:
         config:
           size: 128
           subset:
     validation:
-      target: taming.data.imagenet.ImageNetValidation
+      target: open_magvit2.taming.data.imagenet.ImageNetValidation
       params:
         config:
           size: 128
           subset:
     test:
-      target: taming.data.imagenet.ImageNetValidation
+      target: open_magvit2.taming.data.imagenet.ImageNetValidation
       params:
         config:
           size: 128
