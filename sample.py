@@ -12,7 +12,8 @@ from PIL import Image
 from tqdm import tqdm, trange
 from einops import repeat
 import importlib
-from taming.modules.transformer.gpt import sample
+from src.Open_MAGVIT2.modules.transformer.gpt import sample_Open_MAGVIT2
+from src.IBQ.modules.transformer.llama import sample_IBQ
 import time
 try:
     import torch_npu
@@ -25,6 +26,11 @@ else:
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 rescale = lambda x: (x + 1.) / 2.
+
+SAMPLE = {
+    "Open-MAGVIT2": sample_Open_MAGVIT2,
+    "IBQ": sample_IBQ
+}
 
 def get_obj_from_str(string, reload=False):
     print(string)
@@ -44,22 +50,30 @@ def chw_to_pillow(x):
 
 
 @torch.no_grad()
-def sample_classconditional(model, batch_size, class_label, steps=256, temperature=None, top_k=None, callback=None,
-                            dim_z=18, h=16, w=16, verbose_time=False, top_p=None, token_factorization=False, cfg_scale=1.0):
+def sample_classconditional(model, batch_size, class_label, model_type, steps=256, temperature=None, top_k=None, callback=None,
+                            dim_z=18, h=16, w=16, verbose_time=False, top_p=None, token_factorization=False, 
+                            cfg_scale=1.0):
     log = dict()
     assert type(class_label) == int, f'expecting type int but type is {type(class_label)}'
     assert not model.be_unconditional, 'Expecting a class-conditional Net2NetTransformer.'
     c_indices = repeat(torch.tensor([class_label]), '1 -> b 1', b=batch_size).to(model.device)  # class token
-    if cfg_scale[0] > 1.0:
-        cond_null = torch.ones_like(c_indices) * model.transformer.config.class_num
-        cond_combined = torch.concat([c_indices, cond_null], dim=0) #(2B 1)
+    if token_factorization:
+        if cfg_scale[0] > 1.0:
+            cond_null = torch.ones_like(c_indices) * model.transformer.config.class_num
+            cond_combined = torch.concat([c_indices, cond_null], dim=0) #(2B 1)
+        else:
+            cond_combined = c_indices # B 1
     else:
-        cond_combined = c_indices # B 1
-    
+        if cfg_scale > 1.0:
+            cond_null = torch.ones_like(c_indices) * model.transformer.config.class_num
+            cond_combined = torch.concat([c_indices, cond_null], dim=0) #(2B 1)
+        else:
+            cond_combined = c_indices # B 1
+
     qzshape = [batch_size, dim_z, h, w]
     
     t1 = time.time()
-    index_sample = sample(cond_combined, model.transformer, steps=steps,
+    index_sample = SAMPLE[model_type](cond_combined, model.transformer, steps=steps,
                             sample_logits=True, top_k=top_k, callback=callback,
                             temperature=temperature, top_p=top_p, token_factorization=token_factorization,
                             cfg_scale=cfg_scale)
@@ -72,7 +86,7 @@ def sample_classconditional(model, batch_size, class_label, steps=256, temperatu
     return log
 
 @torch.no_grad()
-def run_for_evaluation(logdir, model, batch_size, temperature, top_k, unconditional=True, num_samples=50000,
+def run_for_evaluation(logdir, model, batch_size, temperature, top_k, model_type, dim_z, unconditional=True, num_samples=50000,
         given_classes=None, top_p=None, token_factorization=False, cfg_scale=1.0, chunk_id=0):
     batches = [batch_size for _ in range(num_samples//batch_size)] + [num_samples % batch_size]
     assert given_classes is not None
@@ -85,7 +99,7 @@ def run_for_evaluation(logdir, model, batch_size, temperature, top_k, unconditio
             if bs == 0: break
             logs = sample_classconditional(model, batch_size=bs, class_label=class_label,
                                             temperature=temperature, top_k=top_k, top_p=top_p, token_factorization=token_factorization
-                                            ,cfg_scale=cfg_scale)
+                                            ,cfg_scale=cfg_scale, dim_z=dim_z, model_type=model_type)
             batch_images = save_npz_from_logs(logs, logdir, base_count=n * batch_size)
             images_npz.append(batch_images)
 
@@ -204,8 +218,11 @@ def get_parser():
         type=int,
         default=4
     )
+    parser.add_argument(
+        "--model",
+        choices=["Open-MAGVIT2", "IBQ"]
+    )
     return parser
-
 
 def load_model_from_config(config, sd, gpu=True, eval_mode=True):
     model = instantiate_from_config(config)
@@ -247,10 +264,18 @@ if __name__ == "__main__":
     model, global_step = load_model(config, ckpt, gpu=True, eval_mode=True)
 
     ## handle topk topp tempeature and cfg_scale
-    opt.top_k = [int(topk) for topk in opt.top_k.split(",")]
-    opt.top_p = [float(topp) for topp in opt.top_p.split(",")]
-    opt.temperature = [float(temp) for temp in opt.temperature.split(",")]
-    opt.cfg_scale = [float(cfg_scal) for cfg_scal in opt.cfg_scale.split(",")]
+    if opt.token_factorization:
+        opt.top_k = [int(topk) for topk in opt.top_k.split(",")]
+        opt.top_p = [float(topp) for topp in opt.top_p.split(",")]
+        opt.temperature = [float(temp) for temp in opt.temperature.split(",")]
+        opt.cfg_scale = [float(cfg_scal) for cfg_scal in opt.cfg_scale.split(",")]
+    else:
+        opt.top_k = [int(topk) for topk in opt.top_k.split(",")][0]
+        opt.top_p = [float(topp) for topp in opt.top_p.split(",")][0]
+        opt.temperature = [float(temp) for temp in opt.temperature.split(",")][0]
+        opt.cfg_scale = [float(cfg_scal) for cfg_scal in opt.cfg_scale.split(",")][0]
+
+    dim_z = config.model.init_args.first_stage_config.params.embed_dim
 
     chunk_id = opt.chunk_idx
     if opt.classes == "imagenet":
@@ -264,8 +289,13 @@ if __name__ == "__main__":
         given_classes = [int(c) for c in cls_str.split(",")]
 
     ### The ckpt should be only a name and the logdir is the version dir
-    logdir = os.path.join(logdir, "samples", f"top_k_{opt.top_k[0]}_{opt.top_k[1]}_temp_{opt.temperature[0]:.2f}_{opt.temperature[1]:.2f}_top_p_{opt.top_p[0]}_{opt.top_p[1]}_cfg_{opt.cfg_scale[0]}_{opt.cfg_scale[1]}",
-                          f"{ckpt_name}")
+    if opt.token_factorization:
+        logdir = os.path.join(logdir, "samples", f"top_k_{opt.top_k[0]}_{opt.top_k[1]}_temp_{opt.temperature[0]:.2f}_{opt.temperature[1]:.2f}_top_p_{opt.top_p[0]}_{opt.top_p[1]}_cfg_{opt.cfg_scale[0]}_{opt.cfg_scale[1]}",
+                            f"{ckpt_name}")
+    else:
+        logdir = os.path.join(logdir, "samples",
+                        f"top_k_{opt.top_k}_temp_{opt.temperature:.2f}_top_p_{opt.top_p}_cfg_{opt.cfg_scale}",
+                        f"{ckpt_name}")
 
     print(f"Logging to {logdir}")
     os.makedirs(logdir, exist_ok=True)
@@ -273,7 +303,7 @@ if __name__ == "__main__":
     start_time = time.time()
     run_for_evaluation(logdir, model, opt.batch_size, opt.temperature, opt.top_k, unconditional=model.be_unconditional,
         given_classes=given_classes, num_samples=opt.num_samples, top_p=opt.top_p, token_factorization=opt.token_factorization,
-        cfg_scale=opt.cfg_scale, chunk_id=chunk_id)
+        cfg_scale=opt.cfg_scale, chunk_id=chunk_id, model_type=opt.model, dim_z=dim_z)
     end_time = time.time()
     print(end_time - start_time, 's')
 

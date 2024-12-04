@@ -10,7 +10,8 @@ import importlib
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
-from taming.models.lfqgan import VQModel
+from src.Open_MAGVIT2.models.lfqgan import VQModel
+from src.IBQ.models.ibqgan import IBQ
 import argparse
 try:
 	import torch_npu
@@ -22,8 +23,14 @@ if hasattr(torch, "npu"):
 else:
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def load_vqgan_new(config, ckpt_path=None, is_gumbel=False):
-	model = VQModel(**config.model.init_args)
+## for different model configuration
+MODEL_TYPE = {
+    "Open-MAGVIT2": VQModel,
+    "IBQ": IBQ
+}
+
+def load_vqgan_new(config, model_type, ckpt_path=None, is_gumbel=False):
+	model = MODEL_TYPE[model_type](**config.model.init_args)
 	if ckpt_path is not None:
 		sd = torch.load(ckpt_path, map_location="cpu")["state_dict"]
 		missing, unexpected = model.load_state_dict(sd, strict=False)
@@ -60,7 +67,7 @@ def main(args):
     configs.data.init_args.test.params.config.size = args.image_size #using test to inference
     configs.data.init_args.test.params.config.subset = args.subset #using the specific data for comparsion
 
-    model = load_vqgan_new(configs, args.ckpt_path).to(DEVICE)
+    model = load_vqgan_new(configs, args.model, args.ckpt_path).to(DEVICE)
 
     visualize_dir = args.save_dir
     visualize_version = args.version
@@ -86,7 +93,17 @@ def main(args):
             count += images.shape[0]
             if model.use_ema:
                 with model.ema_scope():
-                    reconstructed_images, _, _ = model(images)
+                    if args.model == "Open-MAGVIT2":
+                        quant, diff, indices, _ = model.encode(images)
+                    elif args.model == "IBQ":
+                        quant, qloss, (_, _, indices) = model.encode(images)
+                    reconstructed_images = model.decode(quant)
+            else:
+                if args.model == "Open-MAGVIT2":
+                    quant, diff, indices, _ = model.encode(images)
+                elif args.model == "IBQ":
+                    quant, qloss, (_, _, indices) = model.encode(images)
+                reconstructed_images = model.decode(quant)
             
             image = images[0]
             reconstructed_image = reconstructed_images[0]
@@ -108,6 +125,7 @@ def get_args():
    parser.add_argument("--subset", default=None)
    parser.add_argument("--version", type=str, required=True)
    parser.add_argument("--save_dir", type=str, required=True)
+   parser.add_argument("--model", choices=["Open-MAGVIT2", "IBQ"])
 
    return parser.parse_args()
   

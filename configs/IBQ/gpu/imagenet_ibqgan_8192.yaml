@@ -1,0 +1,92 @@
+seed_everything: true
+trainer:
+  accelerator: gpu
+  strategy: ddp_find_unused_parameters_true
+  devices: 8
+  num_nodes: 8
+  precision: bf16-mixed
+  max_epochs: 280
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: -1
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "../../checkpoints/vqgan/test"
+        save_top_k: -1
+        save_last: True
+        monitor: "train/perceptual_loss"
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: "../../results/vqgan/"
+      version: "test"
+      name:
+
+model:
+  class_path: src.IBQ.models.ibqgan.IBQ
+  init_args:
+    ddconfig:
+      double_z: False
+      z_channels: 256
+      resolution: 256
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [ 1,1,2,2,4]  # num_down = len(ch_mult)-1
+      num_res_blocks: 4 #not adopt from showo
+      attn_resolutions: [16] #not adopt from showo
+      dropout: 0.0
+
+    lossconfig:
+      target: src.IBQ.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      params:
+        disc_conditional: False
+        disc_in_channels: 3
+        disc_start: 0 # from 0 epoch
+
+        disc_weight: 0.4 # default 0.4
+        quant_loss_weight: 1.0 # default 1.0
+        entropy_loss_weight: 0.05 # default 0.1
+        gen_loss_weight: 0.1
+        lecam_loss_weight: 0.05
+
+    n_embed: 8192
+    embed_dim: 256
+    learning_rate: 1e-4
+    l2_normalize: False
+    use_entropy_loss: True
+    sample_minimization_weight: 1.0
+    batch_maximization_weight: 1.0
+    entropy_temperature: 0.01 # default 0.01
+    beta: 0.25
+    use_ema: True
+    resume_lr:
+    lr_drop_epoch: [250]
+
+
+data:
+  class_path: main.DataModuleFromConfig
+  init_args:
+    batch_size: 4
+    num_workers: 16
+    train:
+      target: src.IBQ.data.imagenet.ImageNetTrain
+      params:
+        config:
+          size: 256
+          subset:
+    validation:
+      target: src.IBQ.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 256
+    test:
+      target: src.IBQ.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 256
+
+ckpt_path: null # to resume

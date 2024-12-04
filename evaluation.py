@@ -22,7 +22,8 @@ from PIL import Image
 from tqdm import tqdm
 from scipy import linalg
 
-from taming.models.lfqgan import VQModel
+from src.Open_MAGVIT2.models.lfqgan import VQModel
+from src.IBQ.models.ibqgan import IBQ
 from metrics.inception import InceptionV3
 import lpips
 from skimage.metrics import peak_signal_noise_ratio as psnr_loss
@@ -34,14 +35,20 @@ if hasattr(torch, "npu"):
 else:
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+## for different model configuration
+MODEL_TYPE = {
+    "Open-MAGVIT2": VQModel,
+    "IBQ": IBQ
+}
+
 def load_config(config_path, display=False):
     config = OmegaConf.load(config_path)
     if display:
         print(yaml.dump(OmegaConf.to_container(config)))
     return config
 
-def load_vqgan_new(config, ckpt_path=None, is_gumbel=False):
-    model = VQModel(**config.model.init_args)
+def load_vqgan_new(config, model_type, ckpt_path=None, is_gumbel=False):
+    model = MODEL_TYPE[model_type](**config.model.init_args) 
     if ckpt_path is not None:
         sd = torch.load(ckpt_path, map_location="cpu")["state_dict"]
         missing, unexpected = model.load_state_dict(sd, strict=False)
@@ -137,6 +144,7 @@ def get_args():
     parser.add_argument("--ckpt_path", required=True, type=str)
     parser.add_argument("--image_size", default=128, type=int)
     parser.add_argument("--batch_size", default=4, type=int)
+    parser.add_argument("--model", choices=["Open-MAGVIT2", "IBQ"])
 
     return parser.parse_args()
 
@@ -146,7 +154,7 @@ def main(args):
     config_data.data.init_args.batch_size = args.batch_size
 
     config_model = load_config(args.config_file, display=False)
-    model = load_vqgan_new(config_model, ckpt_path=args.ckpt_path).to(DEVICE) #please specify your own path here
+    model = load_vqgan_new(config_model, model_type=args.model, ckpt_path=args.ckpt_path).to(DEVICE) #please specify your own path here
     codebook_size = config_model.model.init_args.n_embed
     
     #usage
@@ -188,11 +196,17 @@ def main(args):
 
             if model.use_ema:
                 with model.ema_scope():
-                    quant, diff, indices, _ = model.encode(images)
+                    if args.model == "Open-MAGVIT2":
+                        quant, diff, indices, _ = model.encode(images)
+                    elif args.model == "IBQ":
+                        quant, qloss, (_, _, indices) = model.encode(images)
                     reconstructed_images = model.decode(quant)
             else:
-               quant, diff, indices, _ = model.encode(images)
-               reconstructed_images = model.decode(quant)
+                if args.model == "Open-MAGVIT2":
+                    quant, diff, indices, _ = model.encode(images)
+                elif args.model == "IBQ":
+                    quant, qloss, (_, _, indices) = model.encode(images)
+                reconstructed_images = model.decode(quant)
 
             reconstructed_images = reconstructed_images.clamp(-1, 1)
             

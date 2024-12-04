@@ -1,0 +1,111 @@
+# refer to https://app.koofr.net/links/90cbd5aa-ef70-4f5e-99bc-f12e5a89380e?path=%2F2021-04-03T19-39-50_cin_transformer%2Fconfigs%2F2021-04-03T19-39-50-project.yaml
+seed_everything: true
+trainer:
+  accelerator: gpu
+  strategy: ddp_find_unused_parameters_true
+  devices: 8
+  num_nodes: 8
+  precision: 16-mixed
+  max_epochs: 400
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 0
+  gradient_clip_val: 1.0
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "../../checkpoints/vqgan/test"
+        save_top_k: 20
+        monitor: "train/loss"
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: "../../results/vqgan"
+      version: "test"
+      name:
+
+model:
+  class_path: src.IBQ.models.cond_transformer_llama.Net2NetTransformer
+  init_args:
+    learning_rate: 3e-4
+    first_stage_key: image
+    cond_stage_key: class_label
+    weight_decay: 5e-2
+    wpe: 0.01 #learning rate decay #1B can be 0.01
+    wp: 8
+    wp0: 0.005
+    twde: 0
+    transformer_config:
+      target: src.IBQ.modules.transformer.llama.GPT
+      params:
+        vocab_size: 16384 # 262144 tokens
+        block_size: 256
+        n_layer: 24
+        n_head: 24
+        n_embd: 1536
+        cond_dim: 1536
+        resid_dropout_p: 0.1
+        ffn_dropout_p: 0.1
+        token_drop: 0.1
+        drop_path_rate: 0.0 ##not using droppath rate
+        alng: 1e-4
+        class_num: 1000 #class tokens
+    first_stage_config:
+      target: src.IBQ.models.ibqgan.IBQ
+      params:
+        ckpt_path: # specify your path for tokenizer FID: 1.37
+        n_embed: 16384
+        embed_dim: 256
+        learning_rate: 1e-4
+        l2_normalize: False
+        use_entropy_loss: True
+        sample_minimization_weight: 1.0
+        batch_maximization_weight: 1.0
+        entropy_temperature: 0.01 # default 0.01
+        beta: 0.25
+        use_ema: True
+        stage: transformer
+        ddconfig:
+          double_z: False
+          z_channels: 256
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult: [ 1,1,2,2,4]  # num_down = len(ch_mult)-1
+          num_res_blocks: 4
+          attn_resolutions: [16]
+          dropout: 0.0
+        lossconfig:
+          target: src.IBQ.modules.losses.DummyLoss
+    cond_stage_config:
+      target: src.IBQ.modules.util.Labelator
+      params:
+        n_classes: 1000
+
+data:
+  class_path: main.DataModuleFromConfig
+  init_args:
+    batch_size: 12
+    num_workers: 16
+    train:
+      target: src.IBQ.data.imagenet.ImageNetTrain
+      params:
+        config:
+          size: 256
+    validation:
+      target: src.IBQ.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 256
+          subset:
+    test:
+      target: src.IBQ.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 256
+          subset:
+
+ckpt_path: null # to resume

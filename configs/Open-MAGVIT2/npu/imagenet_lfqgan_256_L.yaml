@@ -1,0 +1,88 @@
+seed_everything: true
+trainer:
+  accelerator: npu
+  strategy: ddp_find_unused_parameters_true
+  devices: 8
+  num_nodes: 4
+  precision: bf16-mixed
+  max_epochs: 270
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: -1
+  log_every_n_steps: 100
+  callbacks:
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        dirpath: "../../checkpoints/vqgan/test"
+        save_top_k: -1 # save all checkpoints
+    - class_path: lightning.pytorch.callbacks.LearningRateMonitor
+      init_args:
+        logging_interval: step
+  logger:
+    class_path: lightning.pytorch.loggers.TensorBoardLogger
+    init_args:
+      save_dir: "../../results/vqgan/"
+      version: "test"
+      name:
+
+model:
+  class_path: src.Open_MAGVIT2.models.lfqgan.VQModel
+  init_args:
+    ddconfig:
+      double_z: False
+      z_channels: 18
+      resolution: 128
+      in_channels: 3
+      out_ch: 3
+      ch: 128
+      ch_mult: [1,1,2,2,4]  # num_down = len(ch_mult)-1
+      num_res_blocks: 4
+
+    lossconfig:
+      target: src.Open_MAGVIT2.modules.losses.vqperceptual.VQLPIPSWithDiscriminator
+      params:
+        disc_conditional: False
+        disc_in_channels: 3
+        disc_start: 0 # from 0 epoch
+        disc_weight: 0.8
+        gen_loss_weight: 0.1
+        lecam_loss_weight: 0.05
+        codebook_weight: 0.1
+        commit_weight: 0.25
+        codebook_enlarge_ratio: 0
+        codebook_enlarge_steps: 2000
+
+    n_embed: 262144
+    embed_dim: 18
+    learning_rate: 1e-4
+    sample_minimization_weight: 1.0
+    batch_maximization_weight: 1.0
+    scheduler_type: "None"
+    use_ema: True
+    resume_lr:
+    lr_drop_epoch: [200, 250]
+
+data:
+  class_path: main.DataModuleFromConfig
+  init_args:
+    batch_size: 8
+    num_workers: 16
+    train:
+      target: src.Open_MAGVIT2.data.imagenet.ImageNetTrain
+      params:
+        config:
+          size: 256
+          subset:
+    validation:
+      target: src.Open_MAGVIT2.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 256
+          subset:
+    test:
+      target: src.Open_MAGVIT2.data.imagenet.ImageNetValidation
+      params:
+        config:
+          size: 256
+          subset:
+
+ckpt_path: null # to resume

@@ -1,46 +1,48 @@
-## OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation
+<div align="center">
+<h1>🚀 SEED-Voken: A Series of Powerful Visual Tokenizers</h1>
+
+</div>
+
+The project aims to provide advanced visual tokenizers for autoregressive visual generation and currently supports the following methods: <br><br>
+
+><a href="https://arxiv.org/abs/2409.04410">Open-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation</a><br>
+>[Zhuoyan Luo*](https://robertluo1.github.io/), [Fengyuan Shi*](https://shifengyuan1999.github.io/), [Yixiao Ge](https://geyixiao.com/), [Yujiu Yang](https://sites.google.com/view/iigroup-thu/people), [Limin Wang](https://wanglimin.github.io/), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en)<br>
+>ARC Lab Tencent PCG, Tsinghua University, Nanjing University<br>
+<a href="./docs/Open-MAGVIT2.md">📚Open-MAGVIT2.md</a>
+> ```
+> @article{luo2024open,
+>   title={Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-regressive Visual Generation},
+>   author={Luo, Zhuoyan and Shi, Fengyuan and Ge, Yixiao and Yang, Yujiu and Wang, Limin and Shan, Ying},
+>   journal={arXiv preprint arXiv:2409.04410},
+>   year={2024}
+> }
+> ```
+
+> <a href="https://arxiv.org/abs/2412.02692">IBQ: Taming Scalable Visual Tokenizer for Autoregressive Image Generation</a><br>
+> [Fengyuan Shi*](https://shifengyuan1999.github.io/), [Zhuoyan Luo*](https://robertluo1.github.io/), [Yixiao Ge](https://geyixiao.com/), [Yujiu Yang](https://sites.google.com/view/iigroup-thu/people), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en), [Limin Wang](https://wanglimin.github.io/)<br>
+> Nanjing University, Tsinghua University, ARC Lab Tencent PCG<br>
+> <a href="./docs/IBQ.md">📚IBQ.md</a>
+> ```
+> @article{shi2024taming,
+>   title={Taming Scalable Visual Tokenizer for Autoregressive Image Generation},
+>   author={Shi, Fengyuan and Luo, Zhuoyan and Ge, Yixiao and Yang, Yujiu and Shan, Ying and Wang, Limin},
+>   journal={arXiv preprint arXiv:2412.02692},
+>   year={2024}
+> }
+> ```
 
 <p align="center">
-<img src="./assets/abstract_fig.png" width=95%>
+<img src="./assets/comparsion.png" width=90%>
 </p>
 
-<div align="center">
-
-[![arXiv](https://img.shields.io/badge/arXiv%20paper-2409.04410-b31b1b.svg)](https://arxiv.org/pdf/2409.04410)&nbsp;
-
-</div>
-
-<div align="center">
-
-> [**OPEN-MAGVIT2: An Open-source Project Toward Democratizing Auto-Regressive Visual Generation**](https://arxiv.org/pdf/2409.04410)<br>
-> [Zhuoyan Luo](https://robertluo1.github.io/), [Fengyuan Shi](https://shifengyuan1999.github.io/), [Yixiao Ge](https://geyixiao.com/), [Yujiu Yang](https://sites.google.com/view/iigroup-thu/people), [Limin Wang](https://wanglimin.github.io/), [Ying Shan](https://scholar.google.com/citations?user=4oXBp9UAAAAJ&hl=en)
-> <br>ARC Lab Tencent PCG, Tsinghua University, Nanjing University<br>
-</div>
-
-We present Open-MAGVIT2, a family of auto-regressive image generation models ranging from 300M to 1.5B. The Open-MAGVIT2 project produces an open-source replication of Google's MAGVIT-v2 tokenizer, a tokenizer with a super-large codebook (i.e., $2^{18}$ codes), and achieves the state-of-the-art reconstruction performance (1.17 rFID) on ImageNet $256 \times 256$. Furthermore, we explore its application in plain auto-regressive models and validate scalability properties. To assist auto-regressive models in predicting with a super-large vocabulary, we factorize it into two sub-vocabulary of different sizes by asymmetric token factorization, and further introduce ''next sub-token prediction'' to enhance sub-token interaction for better generation quality.  We release all models and codes to foster innovation and creativity in the field of auto-regressive visual generation. :sparkling_heart:
-
-### 📰 News
-* We thank [Marina Vinyes](https://github.com/vinyesm) for making a [package](https://pypi.org/project/open-magvit2/). Enjoy it for more convenience. 
-* **[2024.09.09]** :fire::fire::fire: We release a better image tokenizer and a family of auto-regressive models ranging from 300M to 1.5B.
-* **[2024.06.17]** :fire::fire::fire: We release the training code of the image tokenizer and checkpoints for different resolutions, **achieving state-of-the-art performance (`0.39 rFID` for 8x downsampling)** compared to VQGAN, MaskGIT, and recent TiTok, LlamaGen, and OmniTokenizer.
-
-### 🎤 TODOs
-* [ &#10004; ] Better image tokenizer with scale-up training.
-* [ &#10004; ] Finalize the training of the autoregressive model.
-* [ ] Video tokenizer and the corresponding autoregressive model.
-
-**🤗 Open-MAGVIT2 is still at an early stage and under active development. Stay tuned for the update!**
-
+## 📰 News
+* **[2024.11.26]**:fire::fire::fire: We are excited to release **IBQ**, a series of scalable visual tokenizers, which achieve a large-scale codebook (2^18) with high dimension (256) and high utilization.
+* **[2024.09.09]** We release an improved version of Open-MAGVIT2 tokenizer and a family of auto-regressive models ranging from 300M to 1.5B.
+* **[2024.06.17]** We release the training code of the **Open-MAGVIT2** tokenizer and checkpoints for different resolutions, **achieving state-of-the-art performance (`0.39 rFID` for 8x downsampling)** compared to VQGAN, MaskGIT, and recent TiTok, LlamaGen, and OmniTokenizer.
 
 ## 📖 Implementations
 
-**Note that our experments are all using Ascned 910B for training. But we have tested our models on V100. The performance gap is narrow.**
-
-**Figure 1.** The framework of the Open-MAGVIT2.
-
-<p align="center">
-<img src="./assets/framework.png">
-</p>
+**Our codebase supports both NPU and GPU for training and inference. All experiments were conducted using the Ascend 910B for training, and we validated our models on the V100. The observed performance between the two platforms is nearly identical.**
 
 ### 🛠️ Installation
 #### GPU
@@ -68,83 +70,8 @@ imagenet
     ├── ...
 ```
 
-### Stage I: Training of Visual Tokenizer
-<!-- * `Stage I Tokenizer Training`: -->
-#### 🚀 Training Scripts
-* $128\times 128$ Tokenizer Training
-```
-bash scripts/train_tokenizer/run_128_L.sh MASTER_ADDR MASTER_PORT NODE_RANK
-```
-
-* $256\times 256$ Tokenizer Training
-```
-bash scripts/train_tokenizer/run_256_L.sh MASTER_ADDR MASTER_PORT NODE_RANK
-```
-
-#### 🚀 Evaluation Scripts
-* $128\times 128$ Tokenizer Evaluation
-```
-bash scripts/evaluation/evaluation_128.sh
-```
-
-* $256\times 256$ Tokenizer Evaluation
-```
-bash scripts/evaluation/evaluation_256.sh
-```
-
-#### 🍺 Performance and Models
-
-**Tokenizer** 
-| Method | Token Type | #Tokens | Train Data | Codebook Size | rFID | PSNR  | Codebook Utilization | Checkpoint |
-|:------:|:----:|:-----:|:-----:|:-------------:|:----:|:----:|:---------------------:|:----:|
-|Open-MAGVIT2-20240617| 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet | 262144 | 1.53 | 21.53 | 100% | - |
-|Open-MAGVIT2-20240617| 2D | 16 $\times$ 16 | 128 $\times$ 128 ImageNet | 262144 | 1.56 | 24.45 | 100% | - |
-|Open-MAGVIT2| 2D | 16 $\times$ 16 | 256 $\times$ 256 ImageNet | 262144 | **1.17** | **21.90** | **100%** | [IN256_Large](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_256_L.ckpt)|
-|Open-MAGVIT2| 2D | 16 $\times$ 16 | 128 $\times$ 128 ImageNet | 262144 | **1.18** | **25.08** | **100%** |[IN128_Large](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/imagenet_128_L.ckpt)|
-|Open-MAGVIT2*| 2D | 32 $\times$ 32 | 128 $\times$ 128 ImageNet | 262144 | **0.34** | **26.19** | **100%** |above|
-
-(*) denotes that the results are from the direct inference using the model trained with $128 \times 128$ resolution without fine-tuning.
-
-### Stage II: Training of Auto-Regressive Models
-
-#### 🚀 Training Scripts
-Please see in scripts/train_autogressive/run.sh for different model configurations.
-```
-bash scripts/train_autogressive/run.sh MASTER_ADDR MASTER_PORT NODE_RANK
-```
-
-#### 🚀 Sample Scripts
-Please see in scripts/train_autogressive/run.sh for different sampling hyper-parameters for different scale of models.
-```
-bash scripts/evaluation/sample_npu.sh or scripts/evaluation/sample_gpu.sh Your_Total_Rank
-```
-
-#### 🍺 Performance and Models
-| Method | Params| #Tokens | FID | IS | Checkpoint |
-|:------:|:-----:|:-------:|:---:|:--:|:----------:|
-|Open-MAGVIT2| 343M | 16 $\times$ 16 | 3.08 | 258.26 | [AR_256_B](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/AR_256_B.ckpt)|
-|Open-MAGVIT2| 804M | 16 $\times$ 16 | 2.51 | 271.70 | [AR_256_L](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/AR_256_L.ckpt)|
-|Open-MAGVIT2| 1.5B | 16 $\times$ 16 | 2.33 | 271.77 | [AR_256_XL](https://huggingface.co/TencentARC/Open-MAGVIT2/blob/main/AR_256_XL.ckpt)|
+### ⚡ Training & Evaluation
+The training and evaluation scripts are in <a href="docs/Open-MAGVIT2.md">Open-MAGVIT2.md</a> and <a href="docs/IBQ.md">IBQ.md</a>.
 
 ## ❤️ Acknowledgement
 We thank [Lijun Yu](https://me.lj-y.com/) for his encouraging discussions. We refer a lot from [VQGAN](https://github.com/CompVis/taming-transformers) and [MAGVIT](https://github.com/google-research/magvit). We also refer to [LlamaGen](https://github.com/FoundationVision/LlamaGen), [VAR](https://github.com/FoundationVision/VAR) and [RQVAE](https://github.com/kakaobrain/rq-vae-transformer). Thanks for their wonderful work.
-
-## ✏️ Citation
-If you found the codebase and our work helpful, please cite it and give us a star :star:.
-```
-@article{luo2024open,
-  title={Open-MAGVIT2: An Open-Source Project Toward Democratizing Auto-regressive Visual Generation},
-  author={Luo, Zhuoyan and Shi, Fengyuan and Ge, Yixiao and Yang, Yujiu and Wang, Limin and Shan, Ying},
-  journal={arXiv preprint arXiv:2409.04410},
-  year={2024}
-}
-
-@inproceedings{yu2024language,
-  title={Language Model Beats Diffusion - Tokenizer is key to visual generation},
-  author={Lijun Yu and Jose Lezama and Nitesh Bharadwaj Gundavarapu and Luca Versari and Kihyuk Sohn and David Minnen and Yong Cheng and Agrim Gupta and Xiuye Gu and Alexander G Hauptmann and Boqing Gong and Ming-Hsuan Yang and Irfan Essa and David A Ross and Lu Jiang},
-  booktitle={The Twelfth International Conference on Learning Representations},
-  year={2024},
-  url={https://openreview.net/forum?id=gzqrANCF4g}
-}
-```
-
