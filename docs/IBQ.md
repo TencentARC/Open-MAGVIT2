@@ -50,10 +50,10 @@ bash scripts/train_tokenizer/IBQ/run_262144.sh MASTER_ADDR MASTER_PORT NODE_RANK
 #### 🍺 Performance and Models
 | Method | #Tokens |  Codebook Size  | rFID | LPIPS  | Codebook Utilization | Checkpoint |
 |:------:|:-----:|:---------------:|:----:|:------:|:---------------------:|:----:|
-|IBQ| 16 $\times$ 16 |      1024       | 2.24 | 0.2580 | 99% | [IN256_Large](https://huggingface.co/TencentARC/IBQ-Tokenizer-1024/blob/main/imagenet256_1024.ckpt)|
-|IBQ| 16 $\times$ 16 |      8192       | 1.87 | 0.2437 | 98% | [IN256_Large](https://huggingface.co/TencentARC/IBQ-Tokenizer-8192/blob/main/imagenet256_8192.ckpt)|
-|IBQ| 16 $\times$ 16 |      16384      | 1.37 | 0.2235 | 96% | [IN256_Large](https://huggingface.co/TencentARC/IBQ-Tokenizer-16384/blob/main/imagenet256_16384.ckpt)|
-|IBQ| 16 $\times$ 16 |     262144      | 1.00 | 0.2030 | 84% | [IN256_Large](https://huggingface.co/TencentARC/IBQ-Tokenizer-262144/blob/main/imagenet256_262144.ckpt)|
+|IBQ| 16 $\times$ 16 |      1024       | 2.24 | 0.2580 | 99% | [Tokenizer-1024](https://huggingface.co/TencentARC/IBQ-Tokenizer-1024/blob/main/imagenet256_1024.ckpt)|
+|IBQ| 16 $\times$ 16 |      8192       | 1.87 | 0.2437 | 98% | [Tokenizer-8192](https://huggingface.co/TencentARC/IBQ-Tokenizer-8192/blob/main/imagenet256_8192.ckpt)|
+|IBQ| 16 $\times$ 16 |      16384      | 1.37 | 0.2235 | 96% | [Tokenizer-16384](https://huggingface.co/TencentARC/IBQ-Tokenizer-16384/blob/main/imagenet256_16384.ckpt)|
+|IBQ| 16 $\times$ 16 |     262144      | 1.00 | 0.2030 | 84% | [Tokenizer-262144](https://huggingface.co/TencentARC/IBQ-Tokenizer-262144/blob/main/imagenet256_262144.ckpt)|
 
 #### 🚀 Evaluation Scripts
 ```
